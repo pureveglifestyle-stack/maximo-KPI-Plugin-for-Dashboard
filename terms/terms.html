@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsLens Terms</title>
+  <link rel="stylesheet" href="terms.css">
+</head>
+<body>
+  <main>
+    <div class="ro">READ-ONLY EXTENSION · INDEPENDENT RESEARCH PROJECT · NOT AFFILIATED WITH IBM</div>
+    <article id="terms"></article>
+    <div id="accept-box" class="accept" hidden>
+      <label><input type="checkbox" id="check"> I have read and accept these Terms &amp; Conditions and use this free extension at my own risk and sole responsibility.</label>
+      <button id="accept" disabled>Accept &amp; continue</button>
+    </div>
+    <div id="accepted" class="accepted" hidden>
+      ✔ You accepted version <span id="ver"></span>.
+      <button id="revoke" class="link">Withdraw acceptance</button>
+    </div>
+  </main>
+  <script src="../lib/terms.js"></script>
+  <script src="terms.js"></script>
+</body>
+</html>

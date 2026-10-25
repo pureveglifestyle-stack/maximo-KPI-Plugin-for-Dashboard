@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OpsLens</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="brand">
+    <img src="../icons/icon48.png" alt="" width="28" height="28">
+    <div>
+      <div class="name">OpsLens</div>
+      <div class="tag">Read-only operations dashboard</div>
+    </div>
+    <span class="ro-badge" title="This extension never changes data">READ-ONLY</span>
+  </header>
+
+  <!-- Terms gate -->
+  <section id="view-terms" hidden>
+    <h1>Before you start</h1>
+    <ul id="terms-summary" class="summary"></ul>
+    <details>
+      <summary>Read full Terms &amp; Conditions</summary>
+      <div id="terms-full" class="terms-full"></div>
+    </details>
+    <label class="check">
+      <input type="checkbox" id="terms-check">
+      <span>I have read and accept the Terms &amp; Conditions. I use this free, read-only research extension at my own risk and sole responsibility.</span>
+    </label>
+    <div class="row">
+      <button id="terms-decline" class="btn ghost">Decline</button>
+      <button id="terms-accept" class="btn primary" disabled>Accept</button>
+    </div>
+  </section>
+
+  <!-- Main -->
+  <section id="view-main" hidden>
+    <div id="detect" class="detect"></div>
+    <button id="open-dashboard" class="btn primary wide" hidden>Open Operations Dashboard</button>
+    <button id="open-demo" class="btn ghost wide">Open demo (sample data)</button>
+    <p id="error" class="error" hidden></p>
+    <p class="hint">Open this popup while you are on a logged-in Maximo tab. No configuration in Maximo is needed.</p>
+  </section>
+
+  <footer>
+    Independent research project · not affiliated with IBM.
+    <a href="#" id="link-terms">Terms</a>
+  </footer>
+
+  <script src="../lib/terms.js"></script>
+  <script src="../lib/maximo-client.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

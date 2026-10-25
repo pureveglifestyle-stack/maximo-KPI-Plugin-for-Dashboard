@@ -1,0 +1,39 @@
+name: Package extension
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: for f in lib/*.js popup/*.js dashboard/*.js terms/*.js; do node --check "$f"; done
+
+      - name: Read-only guard (no write HTTP methods in extension code)
+        run: |
+          if grep -rnE "method:\s*['\"](POST|PUT|PATCH|DELETE)|x-method-override" lib popup dashboard terms; then
+            echo "Write operation found – OpsLens must stay read-only." && exit 1
+          fi
+
+      - name: Build zip
+        run: zip -r opslens-extension.zip manifest.json icons lib popup dashboard terms LICENSE DISCLAIMER.md PRIVACY.md README.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opslens-extension
+          path: opslens-extension.zip
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opslens-extension.zip

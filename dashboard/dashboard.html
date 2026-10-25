@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsLens Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="../icons/icon48.png" alt="" width="26" height="26">
+      <span class="name">OpsLens</span>
+      <span class="ro-badge" title="This extension only reads data">READ-ONLY</span>
+    </div>
+    <div id="conn" class="conn"></div>
+    <div class="controls">
+      <label>Period
+        <select id="range">
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="180">Last 6 months</option>
+          <option value="365">Last 12 months</option>
+        </select>
+      </label>
+      <label>Site
+        <select id="site"><option value="">All sites</option></select>
+      </label>
+      <label>Auto-refresh
+        <select id="auto">
+          <option value="0">Off</option>
+          <option value="5">5 min</option>
+          <option value="15">15 min</option>
+          <option value="60">60 min</option>
+        </select>
+      </label>
+      <button id="refresh" class="btn" title="Reload data from Maximo">⟳ Refresh</button>
+      <button id="theme" class="btn" title="Toggle light / dark theme">Theme</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="overview" class="active">Overview</button>
+    <button role="tab" data-tab="wo">Work Orders</button>
+    <button role="tab" data-tab="assets">Assets &amp; PM</button>
+    <button role="tab" data-tab="sr">Service Requests</button>
+    <button role="tab" data-tab="about">About &amp; Terms</button>
+  </nav>
+
+  <div id="warnings" class="warnings"></div>
+  <div id="chips" class="chips"></div>
+
+  <main>
+    <!-- OVERVIEW -->
+    <section id="tab-overview" class="tab">
+      <div class="kpis" id="wo-kpis"></div>
+      <div class="grid">
+        <div class="card span-2"><h3>Created vs completed</h3><div class="chart" id="c-trend"></div></div>
+        <div class="card"><h3>Work orders by status <small>click to filter</small></h3><div class="chart" id="c-status"></div></div>
+        <div class="card"><h3>By work type <small>click to filter</small></h3><div class="chart" id="c-type"></div></div>
+        <div class="card"><h3>Open by priority <small>click to filter</small></h3><div class="chart" id="c-priority"></div></div>
+        <div class="card"><h3>Backlog aging</h3><div class="chart" id="c-aging"></div></div>
+        <div class="card"><h3>By site <small>click to filter</small></h3><div class="chart" id="c-site"></div></div>
+        <div class="card"><h3>Top 10 assets – corrective work <small>bad actors</small></h3><div class="chart" id="c-assets"></div></div>
+        <div class="card"><h3>Open by owner group <small>click to filter</small></h3><div class="chart" id="c-owner"></div></div>
+        <div class="card span-3"><h3>Overdue work orders</h3><div id="t-overdue"></div></div>
+      </div>
+    </section>
+
+    <!-- WORK ORDERS -->
+    <section id="tab-wo" class="tab" hidden>
+      <div class="toolbar">
+        <div class="seg" id="wo-view">
+          <button data-v="all" class="active">All</button>
+          <button data-v="open">Open</button>
+          <button data-v="overdue">Overdue</button>
+          <button data-v="emergency">Emergency / P1</button>
+          <button data-v="completed">Completed</button>
+        </div>
+        <input id="wo-search" type="search" placeholder="Search WO, description, asset, location…">
+        <button id="wo-export" class="btn">⬇ Export CSV</button>
+      </div>
+      <div class="card"><div id="t-wo"></div></div>
+    </section>
+
+    <!-- ASSETS & PM -->
+    <section id="tab-assets" class="tab" hidden>
+      <div class="kpis" id="asset-kpis"></div>
+      <div class="grid">
+        <div class="card"><h3>Assets by status</h3><div class="chart" id="c-asset-status"></div></div>
+        <div class="card"><h3>Assets by type</h3><div class="chart" id="c-asset-type"></div></div>
+        <div class="card"><h3>PM schedule – next 4 weeks</h3><div class="chart" id="c-pm-upcoming"></div></div>
+        <div class="card"><h3>PMs by frequency</h3><div class="chart" id="c-pm-freq"></div></div>
+        <div class="card span-2"><h3>Overdue &amp; upcoming PMs (30 days)</h3><div id="t-pm"></div></div>
+      </div>
+    </section>
+
+    <!-- SERVICE REQUESTS -->
+    <section id="tab-sr" class="tab" hidden>
+      <div class="kpis" id="sr-kpis"></div>
+      <div class="grid">
+        <div class="card span-2"><h3>Service requests – created vs closed</h3><div class="chart" id="c-sr-trend"></div></div>
+        <div class="card"><h3>By status</h3><div class="chart" id="c-sr-status"></div></div>
+        <div class="card"><h3>By priority</h3><div class="chart" id="c-sr-priority"></div></div>
+        <div class="card"><h3>By site</h3><div class="chart" id="c-sr-site"></div></div>
+        <div class="card span-3"><h3>Open service requests</h3><div id="t-sr"></div></div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="tab-about" class="tab" hidden>
+      <div class="card about">
+        <div class="ro-notice">
+          <strong>This is a READ-ONLY extension.</strong> It only reads data with HTTP GET through your own Maximo login
+          and never creates, changes or deletes records. No configuration in Maximo is needed or made.
+        </div>
+        <div id="about-terms"></div>
+        <p><button id="revoke" class="btn">Withdraw my acceptance of the terms</button></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    OpsLens is a free, independent research project – <strong>not affiliated with, endorsed by or related to IBM</strong> or IBM Maximo.
+    Read-only. Provided "as is", use at your own risk and sole responsibility. IBM and Maximo are trademarks of IBM Corp.
+  </footer>
+
+  <div id="overlay" class="overlay" hidden>
+    <div class="overlay-box">
+      <div class="spinner"></div>
+      <div id="overlay-msg">Loading…</div>
+    </div>
+  </div>
+
+  <script src="../lib/terms.js"></script>
+  <script src="../lib/maximo-client.js"></script>
+  <script src="../lib/loader.js"></script>
+  <script src="../lib/analytics.js"></script>
+  <script src="../lib/charts.js"></script>
+  <script src="../lib/demo-data.js"></script>
+  <script src="table.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+:root {
+  --bg: #ffffff; --fg: #1f2329; --muted: #5d6670; --line: #e3e6ea; --accent: #118DFF;
+  --accent-fg: #fff; --warn-bg: #fff4e5; --warn-fg: #8a4b00; --ok: #1aab40; --err: #c62828;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1b1f24; --fg: #e8eaed; --muted: #9aa3ad; --line: #30363d; --warn-bg: #3a2a12; --warn-fg: #ffcc80; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; width: 380px; font: 13px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); }
+.brand { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.brand .name { font-weight: 700; font-size: 15px; }
+.brand .tag { color: var(--muted); font-size: 11px; }
+.ro-badge { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 3px 7px; border-radius: 4px; background: var(--ok); color: #fff; }
+section { padding: 12px 14px; }
+h1 { font-size: 14px; margin: 0 0 8px; }
+.summary { margin: 0 0 10px; padding-left: 18px; }
+.summary li { margin-bottom: 6px; }
+details { margin-bottom: 10px; }
+summary { cursor: pointer; color: var(--accent); }
+.terms-full { max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 12px; }
+.terms-full h2 { font-size: 13px; } .terms-full h3 { font-size: 12px; margin: 10px 0 2px; }
+.check { display: flex; gap: 8px; align-items: flex-start; background: var(--warn-bg); color: var(--warn-fg); padding: 8px; border-radius: 6px; }
+.check input { margin-top: 2px; }
+.row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+.btn { border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.wide { width: 100%; margin-top: 8px; }
+.detect { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.detect .ok { color: var(--ok); font-weight: 600; }
+.detect .no { color: var(--muted); font-weight: 600; }
+.detect code { word-break: break-all; font-size: 11px; }
+.error { color: var(--err); }
+.hint { color: var(--muted); font-size: 11px; }
+footer { border-top: 1px solid var(--line); padding: 8px 14px; color: var(--muted); font-size: 11px; }
+footer a { color: var(--accent); }
