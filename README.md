@@ -48,6 +48,12 @@ GENMAHI AI works in **Google Chrome** and **Microsoft Edge** (Manifest V3).
 4. Click **Load unpacked** and select the folder that contains `manifest.json`.
 5. Pin the **GENMAHI AI** icon to your toolbar.
 
+### Microsoft Edge Add-ons store
+
+To publish GENMAHI AI in the Edge store so anyone can install it with one click, follow
+[store/EDGE_STORE_LISTING.md](store/EDGE_STORE_LISTING.md). It contains the ready-to-paste listing text, the
+certification notes and the store images.
+
 ## Use
 
 1. Log in to Maximo as usual (Maximo 7.6.x or Maximo Application Suite / Manage).
