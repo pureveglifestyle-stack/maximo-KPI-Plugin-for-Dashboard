@@ -334,18 +334,41 @@
   function renderAssets() {
     const assets = bySite(state.data.assets);
     const a = OpsAnalytics.assets(assets, state.site ? assets.length : state.data.assetTotal);
-    const p = OpsAnalytics.pms(bySite(state.data.pms));
+    const fromWO = state.data.pmSource === 'wo';
+    const p = fromWO ? OpsAnalytics.pmsFromWorkOrders(bySite(state.data.wos)) : OpsAnalytics.pms(bySite(state.data.pms));
+    const title = (id, text) => { $(id).parentElement.querySelector('h3').textContent = text; };
     kpis($('asset-kpis'), [
       { label: 'Assets', value: num(a.total), sub: a.sampled < a.total ? 'charts use first ' + num(a.sampled) : 'in scope' },
       { label: 'Operating', value: a.availabilityPct === null ? '–' : num(a.availabilityPct, 1) + '%', sub: num(a.running) + ' assets operating', tone: 'good' },
       { label: 'Not operating', value: num(a.notRunning), sub: 'status not OPERATING', tone: a.notRunning ? 'warn' : 'good' },
-      { label: 'Active PMs', value: num(p.active), sub: 'preventive maintenance' },
-      { label: 'PMs overdue', value: num(p.overdue), sub: 'next due date passed', tone: p.overdue ? 'bad' : 'good' },
-      { label: 'PMs due ≤ 30 days', value: num(p.next30), sub: 'upcoming workload' }
+      fromWO
+        ? { label: 'Open PM work orders', value: num(p.active), sub: 'from PM-generated WOs' }
+        : { label: 'Active PMs', value: num(p.active), sub: 'preventive maintenance' },
+      { label: fromWO ? 'PM WOs overdue' : 'PMs overdue', value: num(p.overdue), sub: fromWO ? 'target date passed' : 'next due date passed', tone: p.overdue ? 'bad' : 'good' },
+      { label: fromWO ? 'PM WOs due ≤ 30 days' : 'PMs due ≤ 30 days', value: num(p.next30), sub: 'upcoming workload' }
     ]);
     OpsCharts.donut($('c-asset-status'), OpsAnalytics.top(a.byStatus, 7), { centerLabel: 'assets' });
     OpsCharts.bar($('c-asset-type'), a.byType.slice(0, 10), { horizontal: true, color: '#197278' });
+    title('c-pm-upcoming', fromWO ? 'PM work orders – due next 4 weeks' : 'PM schedule – next 4 weeks');
     OpsCharts.bar($('c-pm-upcoming'), p.upcoming, { colors: ['#D64550', '#118DFF', '#118DFF', '#118DFF', '#118DFF'] });
+    if (fromWO) {
+      title('c-pm-freq', 'Open PM work orders by status');
+      OpsCharts.donut($('c-pm-freq'), OpsAnalytics.top(p.byStatus, 7), { centerLabel: 'PM WOs' });
+      title('t-pm', 'Overdue & upcoming PM work orders (30 days)');
+      OpsTable.render($('t-pm'), p.list, [
+        { key: 'wonum', label: 'Work order', render: (w) => link('wotrack', w.workorderid, w.wonum) },
+        { key: 'pmnum', label: 'PM' },
+        { key: 'description', label: 'Description', wrap: true },
+        { key: 'status', label: 'Status', render: (w) => pill(w.status || '') },
+        { key: 'siteid', label: 'Site' },
+        { key: 'assetnum', label: 'Asset' },
+        { key: 'targcompdate', label: 'Due', render: (w) => fmtDate(w.targcompdate || w.schedfinish), sortValue: (w) => w.targcompdate || w.schedfinish || '' },
+        { key: '_s', label: 'Health', render: (w) => (OpsAnalytics.isOverdue(w, now()) ? pill('Overdue', 'bad') : pill('Upcoming')) }
+      ], { pageSize: 10, emptyText: 'No overdue or upcoming PM work orders' });
+      return;
+    }
+    title('c-pm-freq', 'PMs by frequency');
+    title('t-pm', 'Overdue & upcoming PMs (30 days)');
     OpsCharts.bar($('c-pm-freq'), p.byFrequency, { horizontal: true, color: '#6B007B' });
     OpsTable.render($('t-pm'), p.list, [
       { key: 'pmnum', label: 'PM', render: (r) => link('pm', r.pmuid, r.pmnum) },
