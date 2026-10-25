@@ -1,14 +1,18 @@
-# OpsLens: Read-only Operations Dashboard (for Maximo)
+<p align="center"><img src="images/logo-full-480.png" alt="GENMAHI AI Middle East Trading and Solutions FZ-LLC" width="320" style="background:#14110a;padding:16px;border-radius:12px"></p>
+
+# GENMAHI AI: Read-only Operations Dashboard (for Maximo)
+
+By **GENMAHI AI Middle East Trading and Solutions FZ-LLC**.
 
 > **⚠️ READ-ONLY · INDEPENDENT RESEARCH PROJECT · NOT AFFILIATED WITH IBM**
 >
-> OpsLens is a free browser extension that we built ourselves as a research project.
+> The GENMAHI AI Operations Dashboard is a free browser extension that GENMAHI AI built as its own research project.
 > It is **not** affiliated with, related to, endorsed by or supported by IBM or any IBM Maximo product.
 > "IBM" and "Maximo" are trademarks of IBM Corp. and are used here only to say what the extension works with.
 > It is provided **"as is", without warranty**. **You use it at your own risk and are solely responsible for how you use it.**
 > See [DISCLAIMER.md](DISCLAIMER.md) and the in-app Terms & Conditions.
 
-OpsLens gives you a **Power BI-style operations dashboard** on top of the Maximo you are already logged into.
+GENMAHI AI gives you a **Power BI-style operations dashboard** on top of the Maximo you are already logged into.
 There's no configuration, no server, and nothing to install inside Maximo. Load the extension in your browser,
 open your Maximo tab, and click the icon.
 
@@ -35,19 +39,19 @@ open your Maximo tab, and click the icon.
 
 ## Install (any user, no admin rights in Maximo needed)
 
-OpsLens works in **Google Chrome** and **Microsoft Edge** (Manifest V3).
+GENMAHI AI works in **Google Chrome** and **Microsoft Edge** (Manifest V3).
 
-1. Download this repository. Use **Code → Download ZIP** and unzip it, or download `opslens-extension.zip` from the
+1. Download this repository. Use **Code → Download ZIP** and unzip it, or download `genmahi-ai-extension.zip` from the
    [Releases](../../releases) page / the latest **Actions** build.
 2. Open `chrome://extensions` (or `edge://extensions`).
 3. Turn on **Developer mode**.
 4. Click **Load unpacked** and select the folder that contains `manifest.json`.
-5. Pin the **OpsLens** icon to your toolbar.
+5. Pin the **GENMAHI AI** icon to your toolbar.
 
 ## Use
 
 1. Log in to Maximo as usual (Maximo 7.6.x or Maximo Application Suite / Manage).
-2. While you're on the Maximo tab, click the **OpsLens** icon.
+2. While you're on the Maximo tab, click the **GENMAHI AI** icon.
 3. The first time, read and **accept the Terms & Conditions**.
 4. Click **Open Operations Dashboard**. Chrome asks once for permission to read from *your Maximo host only*.
 5. Keep the Maximo tab open. The dashboard reads data through it.
@@ -58,7 +62,7 @@ To look around without Maximo, click **Open demo (sample data)**.
 
 ```
  ┌───────────────┐   chrome.scripting   ┌──────────────────────┐  same-origin GET   ┌──────────────┐
- │ OpsLens       │ ───────────────────► │ your Maximo tab      │ ─────────────────► │ Maximo REST  │
+ │ GENMAHI AI       │ ───────────────────► │ your Maximo tab      │ ─────────────────► │ Maximo REST  │
  │ dashboard tab │ ◄─────────────────── │ (existing session)   │ ◄───────────────── │ /oslc or /api│
  └───────────────┘     JSON results     └──────────────────────┘     JSON (lean)    └──────────────┘
 ```
@@ -82,6 +86,23 @@ To look around without Maximo, click **Open demo (sample data)**.
 | `activeTab`, `scripting` | Run the read-only GET request inside your Maximo tab |
 | `storage` | Remember that you accepted the terms, plus your theme, period and refresh preferences |
 | optional host access to *your Maximo host* | Requested when you click **Open dashboard**, for that single host only |
+
+## When you don't have access
+
+The dashboard only shows what your Maximo account is allowed to see. If Maximo refuses access to an area, the
+dashboard says so instead of showing empty or zero figures:
+
+> 🔒 **Not authorized to view service requests.** Missing group access: your Maximo security group does not have
+> read access to the Service Requests application. Ask your Maximo administrator to grant read access.
+
+| Area | Maximo application your security group needs (read access) |
+|---|---|
+| Overview, Work Orders | Work Order Tracking |
+| Service Requests | Service Requests |
+| Assets | Assets |
+| PM | Preventive Maintenance. Without it, PM figures are calculated from PM-generated work orders |
+
+![Not authorized](docs/screenshot-not-authorized.png)
 
 ## KPI definitions
 
@@ -111,6 +132,7 @@ lib/analytics.js         KPI and aggregation functions (pure)
 lib/charts.js            Dependency-free SVG charts
 lib/demo-data.js         Synthetic demo data
 lib/terms.js             Terms & Conditions text and acceptance
+icons/, images/          GENMAHI AI icons and logos
 ```
 
 ## Contributing
@@ -120,4 +142,4 @@ write operation to Maximo will not be accepted.
 
 ## License
 
-[MIT](LICENSE). Also see [DISCLAIMER.md](DISCLAIMER.md) and [PRIVACY.md](PRIVACY.md).
+[MIT](LICENSE), © 2026 GENMAHI AI Middle East Trading and Solutions FZ-LLC. Also see [DISCLAIMER.md](DISCLAIMER.md) and [PRIVACY.md](PRIVACY.md).

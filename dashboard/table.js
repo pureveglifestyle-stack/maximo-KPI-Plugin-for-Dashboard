@@ -1,7 +1,7 @@
 /*
- * OpsLens – sortable, paged data table + CSV export. textContent only.
+ * GENMAHI AI – sortable, paged data table + CSV export. textContent only.
  */
-var OpsTable = (function () {
+var GenmahiTable = (function () {
   function render(container, rows, columns, opts = {}) {
     const pageSize = opts.pageSize || 15;
     let sortKey = opts.sortKey || null;

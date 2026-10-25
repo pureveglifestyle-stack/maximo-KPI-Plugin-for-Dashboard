@@ -1,12 +1,12 @@
 (async function () {
   const $ = (id) => document.getElementById(id);
 
-  OpsTerms.SUMMARY.forEach((s) => {
+  GenmahiTerms.SUMMARY.forEach((s) => {
     const li = document.createElement('li');
     li.textContent = s;
     $('terms-summary').appendChild(li);
   });
-  $('terms-full').innerHTML = OpsTerms.HTML; // static text authored in lib/terms.js
+  $('terms-full').innerHTML = GenmahiTerms.HTML; // static text authored in lib/terms.js
 
   $('link-terms').addEventListener('click', (e) => {
     e.preventDefault();
@@ -15,12 +15,12 @@
 
   $('terms-check').addEventListener('change', (e) => { $('terms-accept').disabled = !e.target.checked; });
   $('terms-accept').addEventListener('click', async () => {
-    await OpsTerms.accept();
+    await GenmahiTerms.accept();
     showMain();
   });
   $('terms-decline').addEventListener('click', () => window.close());
 
-  if (await OpsTerms.isAccepted()) showMain();
+  if (await GenmahiTerms.isAccepted()) showMain();
   else $('view-terms').hidden = false;
 
   async function showMain() {
@@ -64,7 +64,7 @@
       // Read-only access to this one Maximo host, requested on user click.
       const granted = await chrome.permissions.request({ origins: [origin + '/*'] });
       if (!granted) {
-        showError('Access to ' + origin + ' was not granted. OpsLens needs it to read data through your Maximo session.');
+        showError('Access to ' + origin + ' was not granted. GENMAHI AI needs it to read data through your Maximo session.');
         return;
       }
     } catch (e) {

@@ -2,11 +2,11 @@
   --bg: #eef1f5; --card: #ffffff; --fg: #1f2329; --muted: #5d6670; --line: #e1e5ea;
   --accent: #118DFF; --good: #1aab40; --bad: #d64550; --warn: #d9a300;
   --chip: #e6f1ff; --shadow: 0 1px 3px rgba(16, 24, 40, .08);
-  --top: #1b2330; --top-fg: #ffffff;
+  --top: #14110a; --top-fg: #ffffff; --gold: #D6AF4A;
 }
 :root[data-theme="dark"] {
   --bg: #0f1216; --card: #1a1f26; --fg: #e8eaed; --muted: #9aa3ad; --line: #2b323b;
-  --chip: #16314f; --shadow: none; --top: #0b0e12;
+  --chip: #16314f; --shadow: none; --top: #0b0a06;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -16,7 +16,9 @@ button, input, select { font: inherit; color: inherit; }
 /* Top bar */
 .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 10px 18px; background: var(--top); color: var(--top-fg); position: sticky; top: 0; z-index: 10; }
 .brand { display: flex; align-items: center; gap: 8px; }
-.brand .name { font-weight: 700; font-size: 17px; letter-spacing: .02em; }
+.brand .logo { height: 34px; width: auto; }
+.brand .name { font-weight: 800; font-size: 17px; letter-spacing: .06em; color: var(--gold); }
+.brand .sub { font-size: 12px; opacity: .8; margin-left: -2px; }
 .ro-badge { font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 3px 7px; border-radius: 4px; background: var(--good); color: #fff; }
 .conn { font-size: 12px; opacity: .85; display: flex; align-items: center; gap: 6px; }
 .conn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; }
@@ -35,7 +37,10 @@ button, input, select { font: inherit; color: inherit; }
 .tabs button { border: 0; background: none; padding: 11px 14px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; }
 .tabs button.active { color: var(--fg); border-bottom-color: var(--accent); font-weight: 600; }
 
-.warnings:empty, .chips:empty { display: none; }
+.warnings:empty, .chips:empty, .denied:empty { display: none; }
+.denied { margin: 12px 18px 0; display: flex; flex-direction: column; gap: 6px; }
+.denied div { padding: 10px 12px; border-radius: 6px; border: 1px solid var(--bad); background: rgba(214,69,80,.1); color: var(--fg); font-size: 13px; }
+.denied strong { color: var(--bad); }
 .warnings { margin: 12px 18px 0; padding: 8px 12px; border-radius: 6px; background: #fff4e5; color: #8a4b00; font-size: 12px; }
 :root[data-theme="dark"] .warnings { background: #3a2a12; color: #ffcc80; }
 .warnings div + div { margin-top: 3px; }

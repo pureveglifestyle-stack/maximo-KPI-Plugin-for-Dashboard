@@ -7,9 +7,10 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; width: 380px; font: 13px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); }
-.brand { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.brand .name { font-weight: 700; font-size: 15px; }
-.brand .tag { color: var(--muted); font-size: 11px; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #14110a; color: #fff; }
+.brand .logo { height: 34px; width: auto; }
+.brand .name { font-weight: 800; font-size: 15px; letter-spacing: .06em; color: #D6AF4A; }
+.brand .tag { color: #c9c3b3; font-size: 11px; }
 .ro-badge { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 3px 7px; border-radius: 4px; background: var(--ok); color: #fff; }
 section { padding: 12px 14px; }
 h1 { font-size: 14px; margin: 0 0 8px; }

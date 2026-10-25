@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "OpsLens – Read-only Operations Dashboard (for Maximo)",
-  "short_name": "OpsLens",
-  "version": "1.0.0",
-  "description": "Free, read-only, BI-style operations dashboard for your Maximo session. Independent research project – not affiliated with IBM.",
+  "name": "GENMAHI AI – Read-only Operations Dashboard (for Maximo)",
+  "short_name": "GENMAHI AI",
+  "version": "1.1.0",
+  "description": "GENMAHI AI – free, read-only, BI-style operations dashboard for your Maximo session. Independent research project, not affiliated with IBM.",
   "permissions": ["storage", "activeTab", "scripting"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "action": {
-    "default_title": "OpsLens – Read-only Operations Dashboard",
+    "default_title": "GENMAHI AI – Read-only Operations Dashboard",
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

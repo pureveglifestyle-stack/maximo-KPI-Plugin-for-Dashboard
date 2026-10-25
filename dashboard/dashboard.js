@@ -1,5 +1,5 @@
 /*
- * OpsLens – dashboard controller.
+ * GENMAHI AI – dashboard controller.
  */
 (async function () {
   const $ = (id) => document.getElementById(id);
@@ -7,7 +7,7 @@
   const DEMO = params.get('demo') === '1';
 
   // ---- Terms gate ---------------------------------------------------------
-  if (!(await OpsTerms.isAccepted())) {
+  if (!(await GenmahiTerms.isAccepted())) {
     location.replace(chrome.runtime.getURL('terms/terms.html') + '?return=' + encodeURIComponent(location.href));
     return;
   }
@@ -93,13 +93,13 @@
   });
   $('wo-export').addEventListener('click', () => {
     const rows = woTableRows();
-    OpsTable.download('opslens-workorders-' + new Date().toISOString().slice(0, 10) + '.csv', OpsTable.toCSV(rows, WO_COLUMNS));
+    GenmahiTable.download('genmahi-ai-workorders-' + new Date().toISOString().slice(0, 10) + '.csv', GenmahiTable.toCSV(rows, WO_COLUMNS));
   });
 
   // About tab
-  $('about-terms').innerHTML = OpsTerms.HTML; // static text authored in lib/terms.js
+  $('about-terms').innerHTML = GenmahiTerms.HTML; // static text authored in lib/terms.js
   $('revoke').addEventListener('click', async () => {
-    await OpsTerms.revoke();
+    await GenmahiTerms.revoke();
     location.replace(chrome.runtime.getURL('terms/terms.html') + '?return=' + encodeURIComponent(location.href));
   });
 
@@ -124,7 +124,7 @@
     m.append(el('h3', null, 'Could not load data'), el('p', null, err.message || String(err)));
     const tips = el('p', 'hint');
     tips.textContent = 'Make sure the Maximo tab is open and you are logged in. Your account needs read access to the standard ' +
-      'REST object structures (e.g. MXAPIWO / MXWO). OpsLens never changes anything in Maximo.';
+      'REST object structures (e.g. MXAPIWO / MXWO). GENMAHI AI never changes anything in Maximo.';
     m.appendChild(tips);
     const actions = el('div', 'actions');
     const retry = el('button', 'btn', 'Retry');
@@ -142,8 +142,8 @@
     loading = true;
     if (!silent) overlay('Loading…');
     try {
-      if (DEMO) state.data = OpsDemo.generate(prefs.range);
-      else state.data = await OpsLoader.load(client, prefs.range, (m) => { if (!silent) $('overlay-msg').textContent = m; });
+      if (DEMO) state.data = GenmahiDemo.generate(prefs.range);
+      else state.data = await GenmahiLoader.load(client, prefs.range, (m) => { if (!silent) $('overlay-msg').textContent = m; });
       populateSites();
       renderConn();
       render();
@@ -217,6 +217,19 @@
     const w = $('warnings');
     w.textContent = '';
     (state.data.warnings || []).forEach((m) => w.appendChild(el('div', null, '⚠ ' + m)));
+
+    // "Not authorized" notices for the data behind the current tab.
+    const areasByTab = { overview: ['wos'], wo: ['wos'], assets: ['assets', 'pms'], sr: ['srs'], about: [] };
+    const labels = { wos: 'work orders', srs: 'service requests', assets: 'assets', pms: 'PM records' };
+    const d = $('denied');
+    d.textContent = '';
+    const denied = state.data.denied || {};
+    areasByTab[state.tab].forEach((area) => {
+      if (!denied[area]) return;
+      const box = el('div');
+      box.append(el('strong', null, '🔒 Not authorized to view ' + labels[area] + '. '), document.createTextNode(denied[area]));
+      d.appendChild(box);
+    });
   }
 
   // ---- KPI cards ----------------------------------------------------------
@@ -235,6 +248,11 @@
     if (!state.data) return;
     renderWarnings();
     renderChips();
+    // Hide figures for data the user is not authorized to view (they would only show misleading zeros).
+    const primary = { overview: 'wos', wo: 'wos', sr: 'srs' }[state.tab];
+    const section = $('tab-' + state.tab);
+    section.hidden = !!(primary && (state.data.denied || {})[primary]);
+    if (section.hidden) return;
     if (state.tab === 'overview') renderOverview();
     if (state.tab === 'wo') renderWorkOrders();
     if (state.tab === 'assets') renderAssets();
@@ -242,15 +260,15 @@
   }
 
   function dimChart(id, key, kind, opts = {}) {
-    const data = OpsAnalytics.top(OpsAnalytics.countBy(wosFiltered(key), DIMS[key].get), 8);
+    const data = GenmahiAnalytics.top(GenmahiAnalytics.countBy(wosFiltered(key), DIMS[key].get), 8);
     const common = { selected: state.filters[key], onSelect: (l) => toggleFilter(key, l) };
-    if (kind === 'donut') OpsCharts.donut($(id), data, Object.assign({ centerLabel: 'work orders' }, common));
-    else OpsCharts.bar($(id), data, Object.assign({ colors: opts.colors }, opts.bar || {}, common));
+    if (kind === 'donut') GenmahiCharts.donut($(id), data, Object.assign({ centerLabel: 'work orders' }, common));
+    else GenmahiCharts.bar($(id), data, Object.assign({ colors: opts.colors }, opts.bar || {}, common));
   }
 
   function renderOverview() {
     const wos = wosFiltered();
-    const a = OpsAnalytics.workOrders(wos, prefs.range);
+    const a = GenmahiAnalytics.workOrders(wos, prefs.range);
     kpis($('wo-kpis'), [
       { label: 'Open work orders', value: num(a.open), sub: 'current backlog' },
       { label: 'Overdue', value: num(a.overdue), sub: num(a.overduePct, 1) + '% of open', tone: a.overduePct > 20 ? 'bad' : a.overduePct > 10 ? 'warn' : 'good' },
@@ -262,34 +280,34 @@
       { label: 'Backlog hours', value: num(a.backlogHours), sub: 'estimated duration, open WOs' }
     ]);
 
-    OpsCharts.line($('c-trend'), { labels: a.trend.labels, series: [
+    GenmahiCharts.line($('c-trend'), { labels: a.trend.labels, series: [
       { name: 'Created', values: a.trend.created, color: '#118DFF' },
       { name: 'Completed', values: a.trend.completed, color: '#1AAB40' }
     ] });
     dimChart('c-status', 'status', 'donut');
-    dimChart('c-type', 'worktype', 'bar', { colors: OpsCharts.PALETTE });
+    dimChart('c-type', 'worktype', 'bar', { colors: GenmahiCharts.PALETTE });
     // Priority chart covers open work orders only
     {
-      const data = OpsAnalytics.countBy(wosFiltered('wopriority').filter(OpsAnalytics.isOpen), DIMS.wopriority.get)
+      const data = GenmahiAnalytics.countBy(wosFiltered('wopriority').filter(GenmahiAnalytics.isOpen), DIMS.wopriority.get)
         .sort((x, y) => (Number(x.label) || 99) - (Number(y.label) || 99)).slice(0, 10);
-      OpsCharts.bar($('c-priority'), data, { colors: ['#D64550', '#E66C37', '#D9B300', '#118DFF', '#1AAB40', '#8A8A8A'], selected: state.filters.wopriority, onSelect: (l) => toggleFilter('wopriority', l) });
+      GenmahiCharts.bar($('c-priority'), data, { colors: ['#D64550', '#E66C37', '#D9B300', '#118DFF', '#1AAB40', '#8A8A8A'], selected: state.filters.wopriority, onSelect: (l) => toggleFilter('wopriority', l) });
     }
-    OpsCharts.bar($('c-aging'), a.aging, { colors: ['#1AAB40', '#118DFF', '#D9B300', '#E66C37', '#D64550'] });
-    OpsCharts.bar($('c-site'), OpsAnalytics.countBy(wos, (w) => w.siteid).slice(0, 10), {
+    GenmahiCharts.bar($('c-aging'), a.aging, { colors: ['#1AAB40', '#118DFF', '#D9B300', '#E66C37', '#D64550'] });
+    GenmahiCharts.bar($('c-site'), GenmahiAnalytics.countBy(wos, (w) => w.siteid).slice(0, 10), {
       horizontal: true, color: '#12239E', selected: state.site || null,
       onSelect: (l) => { state.site = state.site === l ? '' : l; $('site').value = state.site; render(); }
     });
     {
       const from = Date.now() - prefs.range * 86400000;
-      const data = OpsAnalytics.countBy(wosFiltered('assetnum').filter((w) => w.assetnum && !w.pmnum && new Date(w.reportdate) >= from), DIMS.assetnum.get).slice(0, 10);
-      OpsCharts.bar($('c-assets'), data, { horizontal: true, color: '#E66C37', selected: state.filters.assetnum, onSelect: (l) => toggleFilter('assetnum', l) });
+      const data = GenmahiAnalytics.countBy(wosFiltered('assetnum').filter((w) => w.assetnum && !w.pmnum && new Date(w.reportdate) >= from), DIMS.assetnum.get).slice(0, 10);
+      GenmahiCharts.bar($('c-assets'), data, { horizontal: true, color: '#E66C37', selected: state.filters.assetnum, onSelect: (l) => toggleFilter('assetnum', l) });
     }
     {
-      const data = OpsAnalytics.countBy(wosFiltered('ownergroup').filter(OpsAnalytics.isOpen), DIMS.ownergroup.get).slice(0, 10);
-      OpsCharts.bar($('c-owner'), data, { horizontal: true, color: '#744EC2', selected: state.filters.ownergroup, onSelect: (l) => toggleFilter('ownergroup', l) });
+      const data = GenmahiAnalytics.countBy(wosFiltered('ownergroup').filter(GenmahiAnalytics.isOpen), DIMS.ownergroup.get).slice(0, 10);
+      GenmahiCharts.bar($('c-owner'), data, { horizontal: true, color: '#744EC2', selected: state.filters.ownergroup, onSelect: (l) => toggleFilter('ownergroup', l) });
     }
 
-    OpsTable.render($('t-overdue'), a.overdueList, WO_COLUMNS, { pageSize: 10, emptyText: 'No overdue work orders 🎉' });
+    GenmahiTable.render($('t-overdue'), a.overdueList, WO_COLUMNS, { pageSize: 10, emptyText: 'No overdue work orders 🎉' });
   }
 
   // ---- Work order table ---------------------------------------------------
@@ -297,7 +315,7 @@
   const WO_COLUMNS = [
     { key: 'wonum', label: 'Work order', render: (w) => link('wotrack', w.workorderid, w.wonum) },
     { key: 'description', label: 'Description', wrap: true },
-    { key: 'status', label: 'Status', render: (w) => pill(w.status || '', OpsAnalytics.isCompleted(w) ? 'good' : '') },
+    { key: 'status', label: 'Status', render: (w) => pill(w.status || '', GenmahiAnalytics.isCompleted(w) ? 'good' : '') },
     { key: 'worktype', label: 'Type' },
     { key: 'wopriority', label: 'Pri', sortValue: (w) => Number(w.wopriority) || 99 },
     { key: 'siteid', label: 'Site' },
@@ -306,18 +324,18 @@
     { key: 'ownergroup', label: 'Owner group' },
     { key: 'reportdate', label: 'Reported', render: (w) => fmtDate(w.reportdate), sortValue: (w) => w.reportdate || '' },
     { key: 'targcompdate', label: 'Due', render: (w) => fmtDate(w.targcompdate || w.schedfinish), csv: (w) => w.targcompdate || w.schedfinish || '', sortValue: (w) => w.targcompdate || w.schedfinish || '' },
-    { key: '_state', label: 'Health', sortValue: (w) => (OpsAnalytics.isOverdue(w, now()) ? 0 : OpsAnalytics.isOpen(w) ? 1 : 2),
-      render: (w) => (OpsAnalytics.isOverdue(w, now()) ? pill('Overdue', 'bad') : OpsAnalytics.isOpen(w) ? pill('Open') : pill('Closed', 'good')),
-      csv: (w) => (OpsAnalytics.isOverdue(w, now()) ? 'Overdue' : OpsAnalytics.isOpen(w) ? 'Open' : 'Closed') }
+    { key: '_state', label: 'Health', sortValue: (w) => (GenmahiAnalytics.isOverdue(w, now()) ? 0 : GenmahiAnalytics.isOpen(w) ? 1 : 2),
+      render: (w) => (GenmahiAnalytics.isOverdue(w, now()) ? pill('Overdue', 'bad') : GenmahiAnalytics.isOpen(w) ? pill('Open') : pill('Closed', 'good')),
+      csv: (w) => (GenmahiAnalytics.isOverdue(w, now()) ? 'Overdue' : GenmahiAnalytics.isOpen(w) ? 'Open' : 'Closed') }
   ];
 
   function woTableRows() {
     const n = now();
     let rows = wosFiltered();
-    if (state.woView === 'open') rows = rows.filter(OpsAnalytics.isOpen);
-    if (state.woView === 'overdue') rows = rows.filter((w) => OpsAnalytics.isOverdue(w, n));
-    if (state.woView === 'emergency') rows = rows.filter((w) => OpsAnalytics.isOpen(w) && OpsAnalytics.isEmergency(w));
-    if (state.woView === 'completed') rows = rows.filter(OpsAnalytics.isCompleted);
+    if (state.woView === 'open') rows = rows.filter(GenmahiAnalytics.isOpen);
+    if (state.woView === 'overdue') rows = rows.filter((w) => GenmahiAnalytics.isOverdue(w, n));
+    if (state.woView === 'emergency') rows = rows.filter((w) => GenmahiAnalytics.isOpen(w) && GenmahiAnalytics.isEmergency(w));
+    if (state.woView === 'completed') rows = rows.filter(GenmahiAnalytics.isCompleted);
     if (state.woSearch) {
       const q = state.woSearch;
       rows = rows.filter((w) => ['wonum', 'description', 'assetnum', 'location', 'status', 'worktype', 'ownergroup', 'siteid']
@@ -327,15 +345,15 @@
   }
   function renderWorkOrders() {
     if (!state.data) return;
-    OpsTable.render($('t-wo'), woTableRows(), WO_COLUMNS, { pageSize: 25, sortKey: 'reportdate', sortDesc: true });
+    GenmahiTable.render($('t-wo'), woTableRows(), WO_COLUMNS, { pageSize: 25, sortKey: 'reportdate', sortDesc: true });
   }
 
   // ---- Assets & PM --------------------------------------------------------
   function renderAssets() {
     const assets = bySite(state.data.assets);
-    const a = OpsAnalytics.assets(assets, state.site ? assets.length : state.data.assetTotal);
+    const a = GenmahiAnalytics.assets(assets, state.site ? assets.length : state.data.assetTotal);
     const fromWO = state.data.pmSource === 'wo';
-    const p = fromWO ? OpsAnalytics.pmsFromWorkOrders(bySite(state.data.wos)) : OpsAnalytics.pms(bySite(state.data.pms));
+    const p = fromWO ? GenmahiAnalytics.pmsFromWorkOrders(bySite(state.data.wos)) : GenmahiAnalytics.pms(bySite(state.data.pms));
     const title = (id, text) => { $(id).parentElement.querySelector('h3').textContent = text; };
     kpis($('asset-kpis'), [
       { label: 'Assets', value: num(a.total), sub: a.sampled < a.total ? 'charts use first ' + num(a.sampled) : 'in scope' },
@@ -347,15 +365,15 @@
       { label: fromWO ? 'PM WOs overdue' : 'PMs overdue', value: num(p.overdue), sub: fromWO ? 'target date passed' : 'next due date passed', tone: p.overdue ? 'bad' : 'good' },
       { label: fromWO ? 'PM WOs due ≤ 30 days' : 'PMs due ≤ 30 days', value: num(p.next30), sub: 'upcoming workload' }
     ]);
-    OpsCharts.donut($('c-asset-status'), OpsAnalytics.top(a.byStatus, 7), { centerLabel: 'assets' });
-    OpsCharts.bar($('c-asset-type'), a.byType.slice(0, 10), { horizontal: true, color: '#197278' });
+    GenmahiCharts.donut($('c-asset-status'), GenmahiAnalytics.top(a.byStatus, 7), { centerLabel: 'assets' });
+    GenmahiCharts.bar($('c-asset-type'), a.byType.slice(0, 10), { horizontal: true, color: '#197278' });
     title('c-pm-upcoming', fromWO ? 'PM work orders – due next 4 weeks' : 'PM schedule – next 4 weeks');
-    OpsCharts.bar($('c-pm-upcoming'), p.upcoming, { colors: ['#D64550', '#118DFF', '#118DFF', '#118DFF', '#118DFF'] });
+    GenmahiCharts.bar($('c-pm-upcoming'), p.upcoming, { colors: ['#D64550', '#118DFF', '#118DFF', '#118DFF', '#118DFF'] });
     if (fromWO) {
       title('c-pm-freq', 'Open PM work orders by status');
-      OpsCharts.donut($('c-pm-freq'), OpsAnalytics.top(p.byStatus, 7), { centerLabel: 'PM WOs' });
+      GenmahiCharts.donut($('c-pm-freq'), GenmahiAnalytics.top(p.byStatus, 7), { centerLabel: 'PM WOs' });
       title('t-pm', 'Overdue & upcoming PM work orders (30 days)');
-      OpsTable.render($('t-pm'), p.list, [
+      GenmahiTable.render($('t-pm'), p.list, [
         { key: 'wonum', label: 'Work order', render: (w) => link('wotrack', w.workorderid, w.wonum) },
         { key: 'pmnum', label: 'PM' },
         { key: 'description', label: 'Description', wrap: true },
@@ -363,14 +381,14 @@
         { key: 'siteid', label: 'Site' },
         { key: 'assetnum', label: 'Asset' },
         { key: 'targcompdate', label: 'Due', render: (w) => fmtDate(w.targcompdate || w.schedfinish), sortValue: (w) => w.targcompdate || w.schedfinish || '' },
-        { key: '_s', label: 'Health', render: (w) => (OpsAnalytics.isOverdue(w, now()) ? pill('Overdue', 'bad') : pill('Upcoming')) }
+        { key: '_s', label: 'Health', render: (w) => (GenmahiAnalytics.isOverdue(w, now()) ? pill('Overdue', 'bad') : pill('Upcoming')) }
       ], { pageSize: 10, emptyText: 'No overdue or upcoming PM work orders' });
       return;
     }
     title('c-pm-freq', 'PMs by frequency');
     title('t-pm', 'Overdue & upcoming PMs (30 days)');
-    OpsCharts.bar($('c-pm-freq'), p.byFrequency, { horizontal: true, color: '#6B007B' });
-    OpsTable.render($('t-pm'), p.list, [
+    GenmahiCharts.bar($('c-pm-freq'), p.byFrequency, { horizontal: true, color: '#6B007B' });
+    GenmahiTable.render($('t-pm'), p.list, [
       { key: 'pmnum', label: 'PM', render: (r) => link('pm', r.pmuid, r.pmnum) },
       { key: 'description', label: 'Description', wrap: true },
       { key: 'siteid', label: 'Site' },
@@ -383,7 +401,7 @@
 
   // ---- Service requests ---------------------------------------------------
   function renderServiceRequests() {
-    const s = OpsAnalytics.serviceRequests(bySite(state.data.srs), prefs.range);
+    const s = GenmahiAnalytics.serviceRequests(bySite(state.data.srs), prefs.range);
     kpis($('sr-kpis'), [
       { label: 'Created', value: num(s.created), sub: 'in selected period' },
       { label: 'Open', value: num(s.open), sub: 'not resolved / closed' },
@@ -391,14 +409,14 @@
       { label: 'Closed', value: num(s.closed), sub: 'in selected period', tone: 'good' },
       { label: 'Avg. resolution', value: s.avgResolutionDays === null ? '–' : num(s.avgResolutionDays, 1) + ' d', sub: 'report → actual finish' }
     ]);
-    OpsCharts.line($('c-sr-trend'), { labels: s.trend.labels, series: [
+    GenmahiCharts.line($('c-sr-trend'), { labels: s.trend.labels, series: [
       { name: 'Created', values: s.trend.created, color: '#E66C37' },
       { name: 'Closed', values: s.trend.closed, color: '#1AAB40' }
     ] });
-    OpsCharts.donut($('c-sr-status'), OpsAnalytics.top(s.byStatus, 7), { centerLabel: 'requests' });
-    OpsCharts.bar($('c-sr-priority'), s.byPriority, { colors: ['#D64550', '#E66C37', '#D9B300', '#118DFF', '#8A8A8A'] });
-    OpsCharts.bar($('c-sr-site'), s.bySite.slice(0, 10), { horizontal: true, color: '#12239E' });
-    OpsTable.render($('t-sr'), s.openList, [
+    GenmahiCharts.donut($('c-sr-status'), GenmahiAnalytics.top(s.byStatus, 7), { centerLabel: 'requests' });
+    GenmahiCharts.bar($('c-sr-priority'), s.byPriority, { colors: ['#D64550', '#E66C37', '#D9B300', '#118DFF', '#8A8A8A'] });
+    GenmahiCharts.bar($('c-sr-site'), s.bySite.slice(0, 10), { horizontal: true, color: '#12239E' });
+    GenmahiTable.render($('t-sr'), s.openList, [
       { key: 'ticketid', label: 'SR', render: (r) => link('sr', r.ticketuid, r.ticketid) },
       { key: 'description', label: 'Description', wrap: true },
       { key: 'status', label: 'Status', render: (r) => pill(r.status || '') },
@@ -411,7 +429,7 @@
 
   // ---- Go -----------------------------------------------------------------
   if (!DEMO && !params.get('base')) {
-    overlayError(new Error('No Maximo address given. Open OpsLens from the toolbar icon while on your Maximo tab.'));
+    overlayError(new Error('No Maximo address given. Open GENMAHI AI from the toolbar icon while on your Maximo tab.'));
     return;
   }
   setupAuto();

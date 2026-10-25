@@ -1,8 +1,8 @@
 # Disclaimer
 
-**OpsLens is a free, read-only, independent research project.**
+**GENMAHI AI is a free, read-only, independent research project.**
 
-* **No affiliation.** OpsLens is our own development. It is not affiliated with, related to, endorsed by, sponsored by
+* **No affiliation.** GENMAHI AI is our own development. It is not affiliated with, related to, endorsed by, sponsored by
   or supported by International Business Machines Corporation (IBM) or any of its products, including IBM Maximo,
   IBM Maximo Application Suite and IBM Maximo Manage. "IBM" and "Maximo" are trademarks of IBM Corp. and are used
   here only to describe compatibility.
